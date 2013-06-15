@@ -19,7 +19,6 @@
 */
 #region Includes
 
-using System;
 using System.Net;
 
 #endregion

@@ -43,7 +43,7 @@ namespace Login_Server
         }
 
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.ControlAppDomain)]
-        public static void Main(string[] args)
+        public static void Main()
         {
             try
             {
