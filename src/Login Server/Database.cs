@@ -21,15 +21,13 @@
 #region Includes
 
 using System;
-using System.Diagnostics;
-using System.IO;
 using MySql.Data.MySqlClient;
 
 #endregion
 
 namespace Login_Server
 {
-    public class Database : IDisposable
+    public sealed class Database : IDisposable
     {
         private readonly string _dbName;
         private readonly string _host;
@@ -99,7 +97,7 @@ namespace Login_Server
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (!_isDisposed)
             {
