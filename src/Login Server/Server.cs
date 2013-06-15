@@ -35,23 +35,13 @@ namespace Login_Server
     public class Server
     {
         private readonly List<Client> _clients;
-        private readonly IPAddress _gsIp;
-        private readonly int _gsPort;
-        private readonly IPAddress _ip;
-        private readonly int _port;
-        private readonly string _serverName;
         private TcpListener _listener;
 
         /// <summary>
         /// Constructor to intialize variables for the server
         /// </summary>
-        public Server(int lport, int lgsPort, IPAddress lip, IPAddress lgsIp, string lserverName)
+        public Server()
         {
-            _ip = lip;
-            _gsIp = lgsIp;
-            _port = lport;
-            _gsPort = lgsPort;
-            _serverName = lserverName;
             Encoding = Encoding.Default;
             _clients = new List<Client>();
         }
@@ -76,7 +66,7 @@ namespace Login_Server
         /// </summary>
         public void Start()
         {
-            _listener = new TcpListener(_ip, _port);
+            _listener = new TcpListener(Config.LoginServerIp, Config.LoginServerPort);
             _listener.Start();
             _listener.BeginAcceptTcpClient(ClientHandler, null);
         }
@@ -221,7 +211,7 @@ namespace Login_Server
                         string[] credentials = Packet.GetParsedCredentials(client.Buffer, read, Encoding);
                         if (ValidUser(credentials[0], credentials[1]))
                         {
-                            replyPacket = Packet.CreateWelcomeMessage(_serverName);
+                            replyPacket = Packet.CreateWelcomeMessage();
                             Write(client.TcpClient, replyPacket);
                         }
                         else
@@ -231,7 +221,7 @@ namespace Login_Server
                         }
                         break;
                     case "GetServerDetails":
-                        replyPacket = Packet.CreateServerDetails(_gsIp.ToString(), _gsPort);
+                        replyPacket = Packet.CreateServerDetails();
                         Write(client.TcpClient, replyPacket);
                         break;
                     default:

@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Client.cs" />
     <Compile Include="Command.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Packet.cs" />

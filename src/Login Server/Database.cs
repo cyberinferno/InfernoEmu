@@ -29,65 +29,13 @@ namespace Login_Server
 {
     public sealed class Database : IDisposable
     {
-        private readonly string _dbName;
-        private readonly string _host;
-        private readonly string _passwd;
-        private readonly string _uid;
         public readonly MySqlConnection Connection;
         private bool _isDisposed;
 
-        public Database(string luid, string lpasswd, string ldbName, string lhost)
-        {
-            _host = lhost;
-            _uid = luid;
-            _passwd = lpasswd;
-            _dbName = ldbName;
-            string connectionString = "SERVER=" + _host + ";" + "DATABASE=" + _dbName + ";" + "UID=" + _uid + ";" +
-                                      "PASSWORD=" + _passwd + ";";
-            Connection = new MySqlConnection(connectionString);
-        }
-
-        public Database(string luid, string lpasswd, string ldbName)
-        {
-            _host = "localhost";
-            _uid = luid;
-            _passwd = lpasswd;
-            _dbName = ldbName;
-            string connectionString = "SERVER=" + _host + ";" + "DATABASE=" + _dbName + ";" + "UID=" + _uid + ";" +
-                                      "PASSWORD=" + _passwd + ";";
-            Connection = new MySqlConnection(connectionString);
-        }
-
-        public Database(string luid, string lpasswd)
-        {
-            _host = "localhost";
-            _uid = luid;
-            _passwd = lpasswd;
-            _dbName = "a3";
-            string connectionString = "SERVER=" + _host + ";" + "DATABASE=" + _dbName + ";" + "UID=" + _uid + ";" +
-                                      "PASSWORD=" + _passwd + ";";
-            Connection = new MySqlConnection(connectionString);
-        }
-
-        public Database(string luid)
-        {
-            _host = "localhost";
-            _uid = luid;
-            _passwd = "";
-            _dbName = "a3";
-            string connectionString = "SERVER=" + _host + ";" + "DATABASE=" + _dbName + ";" + "UID=" + _uid + ";" +
-                                      "PASSWORD=" + _passwd + ";";
-            Connection = new MySqlConnection(connectionString);
-        }
-
         public Database()
         {
-            _host = "localhost";
-            _uid = "root";
-            _passwd = "";
-            _dbName = "a3";
-            string connectionString = "SERVER=" + _host + ";" + "DATABASE=" + _dbName + ";" + "UID=" + _uid + ";" +
-                                      "PASSWORD=" + _passwd + ";";
+            string connectionString = "SERVER=" + Config.DbServerHost + ";" + "DATABASE=" + Config.DbName + ";" + "UID=" + Config.DbUsername + ";" +
+                                      "PASSWORD=" + Config.DbPassword + ";";
             Connection = new MySqlConnection(connectionString);
         }
 
@@ -130,7 +78,7 @@ namespace Login_Server
                         Console.WriteLine("Invalid MySQL server username or password!");
                         break;
                     default:
-                        Console.WriteLine("Cannot connect to " + _dbName + " database!");
+                        Console.WriteLine("Cannot connect to " + Config.DbName + " database!");
                         break;
                 }
                 return false;

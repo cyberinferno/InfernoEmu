@@ -129,8 +129,9 @@ namespace Login_Server
         /// <summary>
         /// Returns packet for welcome message of the server
         /// </summary>
-        public static byte[] CreateWelcomeMessage(string serverName)
+        public static byte[] CreateWelcomeMessage()
         {
+            string serverName = Config.ServerName;
             var headPacket = new byte[] {0x5c, 0x00, 0x00, 0x00, 0x01, 0x4f, 0x00, 0x00, 0x01, 0xe3, 0x01};
             var midPacket = new byte[]
                                 {
@@ -156,8 +157,10 @@ namespace Login_Server
         /// <summary>
         /// Returns packet with server IP and port
         /// </summary>
-        public static byte[] CreateServerDetails(string ip, int port)
+        public static byte[] CreateServerDetails()
         {
+            string ip = Config.GameServerIp.ToString();
+            int port = Config.GameServerPort;
             var headPacket = new byte[]
                                  {0x22, 0x00, 0x00, 0x00, 0x01, 0x4f, 0x00, 0x00, 0x01, 0xe2, 0x11, 0x38, 0x54, 0x00};
             byte[] packet = CombineByteArray(headPacket, GetBytesFrom(ip + GetNullString(16 - ip.Length)));

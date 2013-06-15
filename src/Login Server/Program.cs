@@ -47,12 +47,17 @@ namespace Login_Server
         {
             try
             {
-                int port = 3550;
-                int gsPort = 9856;
-                string serverName = "InfernoEmu";
-                IPAddress loginServerIp = IPAddress.Any;
-                IPAddress gameServerIp = IPAddress.Parse("127.0.0.1");
-                _isRunning = true;
+                //Initializing default configuration values
+                Config.LoginServerPort = 3550;
+                Config.GameServerPort = 3300;
+                Config.ServerName = "InfernoEmu";
+                Config.LoginServerIp = IPAddress.Any;
+                Config.GameServerIp = IPAddress.Parse("127.0.0.1");
+                Config.DbServerHost = "localhost";
+                Config.DbUsername = "root";
+                Config.DbPassword = "";
+                Config.DbName = "a3";
+
                 if(!File.Exists("LoginServer.ini"))
                     throw new FileNotFoundException("LoginServer.ini not found");
                 using (var streamReader = new StreamReader("LoginServer.ini", true))
@@ -66,29 +71,42 @@ namespace Login_Server
                         switch (config[0])
                         {
                             case "LoginServerIp":
-                                loginServerIp = IPAddress.Parse(config[1].Trim());
+                                Config.LoginServerIp = IPAddress.Parse(config[1].Trim());
                                 break;
                             case "LoginServerPort":
-                                port = Convert.ToInt32(config[1].Trim());
+                                Config.LoginServerPort = Convert.ToInt32(config[1].Trim());
                                 break;
                             case "GameServerIp":
-                                gameServerIp = IPAddress.Parse(config[1].Trim());
+                                Config.GameServerIp = IPAddress.Parse(config[1].Trim());
                                 break;
                             case "GameServerPort":
-                                gsPort = Convert.ToInt32(config[1].Trim());
+                                Config.GameServerPort = Convert.ToInt32(config[1].Trim());
                                 break;
                             case "ServerName":
-                                serverName = config[1].Trim();
+                                Config.ServerName = config[1].Trim();
+                                break;
+                            case "DatabaseHost":
+                                Config.DbServerHost = config[1].Trim();
+                                break;
+                            case "DatabaseUsername":
+                                Config.DbUsername = config[1].Trim();
+                                break;
+                            case "DatabasePassword":
+                                Config.DbPassword = config[1].Trim();
+                                break;
+                            case "DatabaseName":
+                                Config.DbName = config[1].Trim();
                                 break;
                         }
                     }
                 }
-                _loginServer = new Server(port, gsPort, loginServerIp, gameServerIp, serverName);
+                _loginServer = new Server();
                 _loginServer.Start();
+                _isRunning = true;
                 Console.WriteLine(".:: Starting InfernoEmu Login Server ::.");
                 Console.Title = "InfernoEmu Login Server";
-                Console.WriteLine("Server started with IP {0} , port {1} and server name {2}!", loginServerIp, port, serverName);
-                Console.WriteLine("Game server IP is {0} and port is {1}", gameServerIp, gsPort);
+                Console.WriteLine("Server started with IP {0} , port {1} and server name {2}!", Config.LoginServerIp, Config.LoginServerPort, Config.ServerName);
+                Console.WriteLine("Game server IP is {0} and port is {1}", Config.GameServerIp, Config.GameServerPort);
                 Console.WriteLine("Press ENTER key to activate command interface!");
                 Console.Beep();
                 Command.Listen();
