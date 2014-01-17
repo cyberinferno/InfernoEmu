@@ -24,7 +24,7 @@ Running the Project
 
 Things that are working
 ------------------------
-1. username, password authentication of an account.
+1. Username, password authentication of an account.
 2. Duplicate login check
 3. IP banning
 4. Server maintenance message for players
@@ -44,4 +44,4 @@ Things to be implemented in the near future
 3. Actually making character enter into the map its currently
 
 
-Thanks getdeepz (https://www.facebook.com/DipakRNayak) for his invaluable help in packet structures!
+Thanks getdeepz (https://www.facebook.com/DipakRNayak) for his invaluable help in packet structures and example codes!
