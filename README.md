@@ -13,12 +13,13 @@ Requirements
 2. Dot net framework 4.0
 3. MSSQL server
 4. Existing A3 MMORPG server with characters created. For guides creating a server visit (http://forum.ragezone.com/f98/)
-5. Visual Studio 2010 (Optional software for making changes in the code)
+5. Visual Studio 2010 (For making changes in the code and building it)
 
 Running the Project
 -------------------
-1. Edit config.ini with your configurations
-2. Run the executable
+1. Build the project in Visual Studio 
+2. Edit config.ini with your configurations
+3. Run the executable
 
 
 Things that are working
