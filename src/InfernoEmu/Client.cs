@@ -1,31 +1,7 @@
-﻿/*
-	Copyright © 2013, InfernoEmu Project
-	All rights reserved.
-	
-	This file is part of InfernoEmu.
-
-	InfernoEmu is free software: you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation, either version 3 of the License, or
-	any later version.
-
-	InfernoEmu is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with InfernoEmu.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-#region Includes
-
-using System;
+﻿using System;
 using System.Net.Sockets;
 
-#endregion
-
-namespace Login_Server
+namespace InfernoEmu
 {
     public class Client
     {
@@ -42,6 +18,7 @@ namespace Login_Server
                 throw new ArgumentNullException("buffer");
             TcpClient = tcpClient;
             Buffer = buffer;
+            Username = null;
         }
 
         /// <summary>
@@ -61,5 +38,10 @@ namespace Login_Server
         {
             get { return TcpClient.GetStream(); }
         }
+
+        /// <summary>
+        /// Sets, Gets the account of client
+        /// </summary>
+        public string Username { get; set; }
     }
 }

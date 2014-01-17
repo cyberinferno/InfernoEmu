@@ -1,9 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Login Server", "Login Server\Login Server.csproj", "{7E41745B-04C0-4160-AD75-1AFFBC3D949B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Game Server", "Game Server\Game Server.csproj", "{6219EBEA-F5D7-499A-B34B-E7AF0AE5A536}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfernoEmu", "InfernoEmu\InfernoEmu.csproj", "{B530247F-B147-4D1B-98BF-197288C4D982}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,14 +9,10 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7E41745B-04C0-4160-AD75-1AFFBC3D949B}.Debug|x86.ActiveCfg = Debug|x86
-		{7E41745B-04C0-4160-AD75-1AFFBC3D949B}.Debug|x86.Build.0 = Debug|x86
-		{7E41745B-04C0-4160-AD75-1AFFBC3D949B}.Release|x86.ActiveCfg = Release|x86
-		{7E41745B-04C0-4160-AD75-1AFFBC3D949B}.Release|x86.Build.0 = Release|x86
-		{6219EBEA-F5D7-499A-B34B-E7AF0AE5A536}.Debug|x86.ActiveCfg = Debug|x86
-		{6219EBEA-F5D7-499A-B34B-E7AF0AE5A536}.Debug|x86.Build.0 = Debug|x86
-		{6219EBEA-F5D7-499A-B34B-E7AF0AE5A536}.Release|x86.ActiveCfg = Release|x86
-		{6219EBEA-F5D7-499A-B34B-E7AF0AE5A536}.Release|x86.Build.0 = Release|x86
+		{B530247F-B147-4D1B-98BF-197288C4D982}.Debug|x86.ActiveCfg = Debug|x86
+		{B530247F-B147-4D1B-98BF-197288C4D982}.Debug|x86.Build.0 = Debug|x86
+		{B530247F-B147-4D1B-98BF-197288C4D982}.Release|x86.ActiveCfg = Release|x86
+		{B530247F-B147-4D1B-98BF-197288C4D982}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
