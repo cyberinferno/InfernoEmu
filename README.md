@@ -42,3 +42,6 @@ Things to be implemented in the near future
 1. Create a new character
 2. Delete a character
 3. Actually making character enter into the map its currently
+
+
+Thanks getdeepz (https://www.facebook.com/DipakRNayak) for his invaluable help in packet structures!
