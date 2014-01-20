@@ -33,7 +33,7 @@ Things that are working
 
 Known bugs
 ----------
-1. If any exceptions character is not kicked from server making it impossible for the account to relogin as server detects it as duplicate login
+1. If any exceptions, character is not kicked from server making it impossible for the account to relogin as server detects it as duplicate login
 2. Character display order might get changed while displaying in the client side
 3. Though a character is wearing stuffs, the character selection screen will show naked characters
 
@@ -41,7 +41,7 @@ Things to be implemented in the near future
 --------------------------------------------
 1. Create a new character
 2. Delete a character
-3. Actually making character enter into the map its currently
+3. Actually making character enter into the map its currently in
 
 
 Thanks getdeepz (https://www.facebook.com/DipakRNayak) for his invaluable help in packet structures and example codes!
