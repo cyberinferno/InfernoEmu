@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -36,7 +37,7 @@ namespace InfernoEmu
         }
 
         /// <summary>
-        /// Returns packet with server IP and port
+        /// Returns packet with server IP and num
         /// </summary>
         public static byte[] CreateServerDetails()
         {
@@ -125,7 +126,7 @@ namespace InfernoEmu
         }
 
         /// <summary>
-        /// Returns packet with server IP and port
+        /// Returns packet with server IP and num
         /// </summary>
         public static byte[] CreateZoneAgentIdPacket()
         {
@@ -144,19 +145,13 @@ namespace InfernoEmu
         }
 
         /// <summary>
-        /// Returns packet with server IP and port
+        /// Returns packet with byte equivalent of int
         /// </summary>
-        public static byte[] CreateGateOkPacket()
+        private static byte[] CreateReverseHexPacket(int num)
         {
-            return new byte[] { 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xe0, 0x00};
-        }
-
-        /// <summary>
-        /// Returns packet with server port
-        /// </summary>
-        private static byte[] CreateReverseHexPacket(int port)
-        {
-            string hexPort = string.Format("{0:x}", port);
+            if (num == 0)
+                return new byte[] { 0x00, 0x00 };
+            string hexPort = string.Format("{0:x}", num);
             while (hexPort.Length < 4)
                 hexPort = "0" + hexPort;
             string temp = hexPort[2] + hexPort[3].ToString();
@@ -166,12 +161,29 @@ namespace InfernoEmu
         }
 
         /// <summary>
+        /// Returns packet with byte equivalent of int for wear
+        /// </summary>
+        private static byte[] WearCreateReverseHexPacket(long num)
+        {
+            if(num == 0)
+                return new byte[] {0x00, 0x00, 0x00, 0x00};
+            string hexPort = string.Format("{0:x}", num);
+            while (hexPort.Length%2 != 0)
+                hexPort = "0" + hexPort;
+            var tbyte = new List<byte>();
+            for(int i = hexPort.Length - 1; i >= 1; i-=2)
+                tbyte.Add(Convert.ToByte(hexPort[i - 1] + hexPort[i].ToString(), 16));
+            for (int i = 0; i < 4 - tbyte.Count; i++)
+                tbyte.Add(0x00);
+            return tbyte.ToArray();
+        }
+
+        /// <summary>
         /// Removes extra null bytes from the end of a packet by finding its actual length
         /// </summary>
         public static byte[] TrimPacket(byte[] packet)
         {
             var length = GetIntFromHex(new[] {packet[0], packet[1]});
-            MyLogger.WriteLoginServerLog("Length is " + length);
             var newPacket = new byte[] { 0x00 };
             for (int i = 0; i < length; i++)
             {
@@ -204,7 +216,7 @@ namespace InfernoEmu
 
         public static byte[] AlterCharacterPacket(byte[] packet)
         {
-            for (int i = 0; i < packet.Length; i++)
+            /*for (int i = 0; i < packet.Length; i++)
             {
                 if((i + 2) < packet.Length)
                 {
@@ -239,23 +251,8 @@ namespace InfernoEmu
                         packet[i + 2] = 0x2e;
                     }
                 }
-            }
+            }*/
             return packet;
-        }
-
-        public static byte[] CreateZoneDisconnectPacket(int cindex)
-        {
-            var packet = new byte[] { 0x00, 0x00 };
-            packet = CombineByteArray(packet, CreateReverseHexPacket(cindex));
-            var temp = new byte[] { 0x03, 0xff, 0x08, 0x11 };
-            packet = CombineByteArray(packet, temp);
-            return CombineByteArray(CreateReverseHexPacket(packet.Length + 2), packet);
-        }
-
-        public static byte[] CreateLoginDisconnectPacket(int cindex)
-        {
-            // TODO: Create DC packet
-            return new byte[] {0x00};
         }
 
         public static int GetIntFromHex(byte[] data)
@@ -301,9 +298,9 @@ namespace InfernoEmu
             }
         }
 
-        public static byte[] CreateCharDetailPacket(string charName, int level, int type)
+        public static byte[] CreateCharDetailPacket(string charName, int level, int type, string wear)
         {
-            // name + (20 - name)*0 + 0 + type + town + 0 + level + 0 + 0 + 0 
+            // name + (20 - name)*0 + 0 + type + town + 0 + level + 0 + 0 + 0 + 0 + 0 + 0 + 0 + 0 + wear + (188 - wear)*0 
             var returnByte = CombineByteArray(GetBytesFrom(charName), GetBytesFrom(GetNullString(20 - charName.Length)));
             byte typeByte = 0x00;
             switch(type)
@@ -318,18 +315,36 @@ namespace InfernoEmu
                     typeByte = 0x03;
                     break;
             }
-            returnByte = CombineByteArray(returnByte, new byte[]{0x00, typeByte, 0x00, 0x00});
+            returnByte = CombineByteArray(returnByte, new byte[] { 0x00, 0x01, typeByte, 0x00 });
             returnByte = CombineByteArray(returnByte, new byte[] { Convert.ToByte(string.Format("{0:x}", level), 16), 0x00, 0x00, 0x00 });
+            if (wear != " ")
+            {
+                returnByte = CombineByteArray(returnByte, new byte[] {0x00, 0x00, 0x00, 0x00});
+                var temp = wear.Split(';');
+                var count = 0;
+                //Convert wear into reverse hex packet and append it to packet byte array
+                for (var i = 0; i < temp.Length; i++)
+                {
+                    if (i != 0 && (i+1) % 3 == 0)
+                    {
+                        returnByte = CombineByteArray(returnByte, WearCreateReverseHexPacket(count));
+                        returnByte = CombineByteArray(returnByte, new byte[]{0x00, 0x00, 0x00, 0x00});
+                        count++;
+                        continue;
+                    }
+                    returnByte = CombineByteArray(returnByte, WearCreateReverseHexPacket(Convert.ToInt64(temp[i])));
+                }
+            }
             return CombineByteArray(returnByte, GetBytesFrom(GetNullString(188 - returnByte.Length)));
         }
 
-        public static byte[] CreateCharacterPacket(string[] chars, string[] levels, string[] types)
+        public static byte[] CreateCharacterPacket(string[] chars, string[] levels, string[] types, string[] wears)
         {
             if (chars[0] == " ")
                 return CreateNewAccountPacket();
             var toReturn = new byte[] { 0x00 };
             for (int i = 0; i < chars.Length; i++)
-                toReturn = i == 0 ? CreateCharDetailPacket(chars[i], Convert.ToInt32(levels[i]), Convert.ToInt32(types[i])) : CombineByteArray(toReturn, chars[i] != " " ? CreateCharDetailPacket(chars[i], Convert.ToInt32(levels[i]), Convert.ToInt32(types[i])) : CreateEmptyCharSlot());
+                toReturn = i == 0 ? CreateCharDetailPacket(chars[i], Convert.ToInt32(levels[i]), Convert.ToInt32(types[i]), wears[i]) : CombineByteArray(toReturn, chars[i] != " " ? CreateCharDetailPacket(chars[i], Convert.ToInt32(levels[i]), Convert.ToInt32(types[i]), wears[i]) : CreateEmptyCharSlot());
             toReturn = AlterCharacterPacket(Encrypt(toReturn));
             return CombineByteArray(new byte[] {0xb8, 0x03, 0x00, 0x00, 0x00, 0x00, 0x0b, 0x00, 0x03, 0xff, 0x05, 0x11}, toReturn);
         }

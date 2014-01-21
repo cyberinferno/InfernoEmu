@@ -200,9 +200,9 @@ namespace InfernoEmu
                             if (PreparedPlayers.IsPrepared(Encoding.Default.GetString(client.Buffer).Substring(14, 14).Trim().TrimEnd('\0')))
                             {
                                 client.Username = Encoding.Default.GetString(client.Buffer).Substring(14, 14).Trim().TrimEnd('\0');
-                                string[] chars = new string[5], levels = new string[5], types = new string[5];
-                                _db.GetCharacters(client.Username, ref chars, ref levels, ref types);
-                                Write(client.TcpClient, Packet.CreateCharacterPacket(chars, levels, types));
+                                string[] chars = new string[5], levels = new string[5], types = new string[5], wears = new string[5];
+                                _db.GetCharacters(client.Username, ref chars, ref levels, ref types, ref wears);
+                                Write(client.TcpClient, Packet.CreateCharacterPacket(chars, levels, types, wears));
                             }
                             else
                                 Write(client.TcpClient, Packet.CreateMessage("User not prepared!"));

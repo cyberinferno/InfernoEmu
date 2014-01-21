@@ -87,7 +87,7 @@ namespace InfernoEmu
             return toReturn;
         }
 
-        public void GetCharacters(string username, ref string[] chars, ref string[] levels, ref string[] types )
+        public void GetCharacters(string username, ref string[] chars, ref string[] levels, ref string[] types, ref string[] wears)
         {
             if (!_isConnected)
             {
@@ -95,7 +95,7 @@ namespace InfernoEmu
                 levels = new[] { " " };
                 types = new[] { " " };
             }
-            var cmd = new SqlCommand("select c_id, c_sheaderc, c_sheaderb from charac0 where c_sheadera = '" + username + "' and c_status = 'A' order by d_udate desc", _myConnection);
+            var cmd = new SqlCommand("select c_id, c_sheaderc, c_sheaderb, m_body from charac0 where c_sheadera = '" + username + "' and c_status = 'A' order by d_udate desc", _myConnection);
             var dataReader = cmd.ExecuteReader();
             if (!dataReader.HasRows)
             {
@@ -118,6 +118,22 @@ namespace InfernoEmu
                     chars[i] = row[0].ToString().Trim();
                     levels[i] = row[1].ToString().Trim();
                     types[i] = row[2].ToString().Trim();
+                    var temp = row[3].ToString().Trim().Split(new[] { @"\_1" }, StringSplitOptions.None);
+                    if (temp.Length > 0)
+                    {
+                        wears[i] = " ";
+                        foreach (string t in temp)
+                        {
+                            var temp1 = t.Split(new[] {@"="}, StringSplitOptions.RemoveEmptyEntries);
+                            if (temp1[0] != "WEAR")
+                                continue;
+                            if (temp1.Length == 2)
+                                wears[i] = temp1[1];
+                            break;
+                        }
+                    }
+                    else
+                        wears[i] = " ";
                     i++;
                     if (i >= 5)
                         break;
