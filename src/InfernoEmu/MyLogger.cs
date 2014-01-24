@@ -45,5 +45,26 @@ namespace InfernoEmu
             }
             catch { }
         }
+
+        public static bool ByteArrayToFile(string fileName, byte[] byteArray)
+        {
+            try
+            {
+                // Open file for reading
+                var fileStream = new FileStream(fileName, FileMode.Create, FileAccess.Write);
+                // Writes a block of bytes to this stream using data from
+                // a byte array.
+                fileStream.Write(byteArray, 0, byteArray.Length);
+                // close file stream
+                fileStream.Close();
+                return true;
+            }
+            catch (Exception exception)
+            {
+                WriteGameServerLog(exception.Message);
+            }
+            // error occured, return false
+            return false;
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -167,15 +168,12 @@ namespace InfernoEmu
         {
             if(num == 0)
                 return new byte[] {0x00, 0x00, 0x00, 0x00};
-            string hexPort = string.Format("{0:x}", num);
-            while (hexPort.Length%2 != 0)
-                hexPort = "0" + hexPort;
-            var tbyte = new List<byte>();
-            for(int i = hexPort.Length - 1; i >= 1; i-=2)
-                tbyte.Add(Convert.ToByte(hexPort[i - 1] + hexPort[i].ToString(), 16));
-            for (int i = 0; i < 4 - tbyte.Count; i++)
-                tbyte.Add(0x00);
-            return tbyte.ToArray();
+            var toReturn = new byte[4];
+            toReturn[0] = (byte)num;
+            toReturn[1] = (byte)(((uint)num >> 8) & 0xFF);
+            toReturn[2] = (byte)(((uint)num >> 16) & 0xFF);
+            toReturn[3] = (byte)(((uint)num >> 24) & 0xFF);
+            return toReturn;
         }
 
         /// <summary>
@@ -300,7 +298,7 @@ namespace InfernoEmu
 
         public static byte[] CreateCharDetailPacket(string charName, int level, int type, string wear)
         {
-            // name + (20 - name)*0 + 0 + type + town + 0 + level + 0 + 0 + 0 + 0 + 0 + 0 + 0 + 0 + wear + (188 - wear)*0 
+            // name + (20 - name)*0 + 0 + type + town + 0 + level + 0 + 0 + 0 + 0 + 0 + 0 + 0 + wear + (188 - wear)*0 
             var returnByte = CombineByteArray(GetBytesFrom(charName), GetBytesFrom(GetNullString(20 - charName.Length)));
             byte typeByte = 0x00;
             switch(type)
@@ -321,21 +319,48 @@ namespace InfernoEmu
             {
                 returnByte = CombineByteArray(returnByte, new byte[] {0x00, 0x00, 0x00, 0x00});
                 var temp = wear.Split(';');
-                var count = 0;
+                var itemPosition = 0;
                 //Convert wear into reverse hex packet and append it to packet byte array
                 for (var i = 0; i < temp.Length; i++)
                 {
                     if (i != 0 && (i+1) % 3 == 0)
                     {
-                        returnByte = CombineByteArray(returnByte, WearCreateReverseHexPacket(count));
+                        returnByte = CombineByteArray(returnByte, WearCreateReverseHexPacket(DecideWear(itemPosition, type)));
                         returnByte = CombineByteArray(returnByte, new byte[]{0x00, 0x00, 0x00, 0x00});
-                        count++;
+                        itemPosition++;
                         continue;
                     }
                     returnByte = CombineByteArray(returnByte, WearCreateReverseHexPacket(Convert.ToInt64(temp[i])));
                 }
             }
             return CombineByteArray(returnByte, GetBytesFrom(GetNullString(188 - returnByte.Length)));
+        }
+
+        private static long DecideWear(int itemPosition, int type)
+        {
+            if (itemPosition == 0)
+            {
+                switch (type)
+                {
+                    case 1:
+                        return 0;
+                    case 3:
+                        return 1;
+                    default:
+                        return 2;
+                }
+            }
+            else if(itemPosition == 1)
+            {
+                switch (type)
+                {
+                    case 1:
+                        return 2;
+                    default:
+                        return 3;
+                }
+            }
+            return itemPosition + 1;
         }
 
         public static byte[] CreateCharacterPacket(string[] chars, string[] levels, string[] types, string[] wears)
@@ -345,7 +370,8 @@ namespace InfernoEmu
             var toReturn = new byte[] { 0x00 };
             for (int i = 0; i < chars.Length; i++)
                 toReturn = i == 0 ? CreateCharDetailPacket(chars[i], Convert.ToInt32(levels[i]), Convert.ToInt32(types[i]), wears[i]) : CombineByteArray(toReturn, chars[i] != " " ? CreateCharDetailPacket(chars[i], Convert.ToInt32(levels[i]), Convert.ToInt32(types[i]), wears[i]) : CreateEmptyCharSlot());
-            toReturn = AlterCharacterPacket(Encrypt(toReturn));
+            toReturn = AlterCharacterPacket(Crypt.Encrypt(toReturn));
+            
             return CombineByteArray(new byte[] {0xb8, 0x03, 0x00, 0x00, 0x00, 0x00, 0x0b, 0x00, 0x03, 0xff, 0x05, 0x11}, toReturn);
         }
 
@@ -355,7 +381,7 @@ namespace InfernoEmu
             var toReturn = new byte[] {0x00};
             for (int i = 0; i < 5; i++)
                 toReturn = i == 0 ? CreateEmptyCharSlot() : CombineByteArray(toReturn, CreateEmptyCharSlot());
-            return CombineByteArray(header, Encrypt(toReturn));
+            return CombineByteArray(header, Crypt.Encrypt(toReturn));
         }
 
         private static byte[] CreateEmptyCharSlot()
@@ -370,29 +396,7 @@ namespace InfernoEmu
             if (msg.Length > 56)
                 msg = msg.Substring(0, 56);
             var toReturn = CombineByteArray(GetBytesFrom(msg), GetBytesFrom(GetNullString(60 - msg.Length)));
-            return CombineByteArray(header, CombineByteArray(Encrypt(toReturn), new byte[] { 0x00, 0x00 }));
-        }
-
-        public static byte[] Decrypt(byte[] packet)
-        {
-            var length = packet.Length;
-            IntPtr unmanagedPointer = Marshal.AllocHGlobal(length);
-            Marshal.Copy(packet, 0, unmanagedPointer, length);
-            Crypt.decrypt_acl(unmanagedPointer, length, 0);
-            Marshal.Copy(unmanagedPointer, packet, 0, length);
-            Marshal.FreeHGlobal(unmanagedPointer);
-            return packet;
-        }
-
-        public static byte[] Encrypt(byte[] packet)
-        {
-            var length = packet.Length;
-            IntPtr unmanagedPointer = Marshal.AllocHGlobal(length);
-            Marshal.Copy(packet, 0, unmanagedPointer, length);
-            Crypt.encrypt_acl(unmanagedPointer, length, 0);
-            Marshal.Copy(unmanagedPointer, packet, 0, length);
-            Marshal.FreeHGlobal(unmanagedPointer);
-            return packet;
+            return CombineByteArray(header, CombineByteArray(Crypt.Encrypt(toReturn), new byte[] { 0x00, 0x00 }));
         }
     }
 }

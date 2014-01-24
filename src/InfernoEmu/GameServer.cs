@@ -228,7 +228,7 @@ namespace InfernoEmu
                             MyLogger.WriteGameServerLog("Got packet of length of " + read);
                             var trimPacket = client.Buffer;
                             Array.Resize(ref trimPacket, read);
-                            MyLogger.WriteGameServerLog("Seems like I got something new here : " + Encoding.Default.GetString(Packet.Decrypt(trimPacket)));
+                            MyLogger.WriteGameServerLog("Seems like I got something new here : " + Encoding.Default.GetString(Crypt.Decrypt(trimPacket)));
                             Write(client.TcpClient, Packet.CreatePopup("Emulator under construction!"));
                             break;
                     }
