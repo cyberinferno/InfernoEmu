@@ -33,9 +33,8 @@ Things that are working
 
 Known bugs
 ----------
-1. If any exceptions, character is not kicked from server making it impossible for the account to relogin as server detects it as duplicate login
-2. Character display order might get changed while displaying in the client side
-3. Though a character is wearing stuffs, the character selection screen might not show full wearing and sometimes characters might be distorted!
+1. Character display order might get changed while displaying in the client side
+2. Character wearing might get distorted in some rare cases as the character display packet is not 100% perfect
 
 Things to be implemented in the near future
 --------------------------------------------
