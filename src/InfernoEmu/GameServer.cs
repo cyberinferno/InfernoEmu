@@ -173,16 +173,17 @@ namespace InfernoEmu
         private void OnDataRead(IAsyncResult asyncResult)
         {
             var client = asyncResult.AsyncState as Client;
+            var clientUsername = "";
             try
             {
                 if (client == null)
                     return;
-                NetworkStream networkStream = client.NetworkStream;
+                var networkStream = client.NetworkStream;
                 var newClientEp = (IPEndPoint)client.TcpClient.Client.RemoteEndPoint;
                 // Check if IP is banned
                 if (!IsIpBanned(newClientEp.Address.ToString()))
                 {
-                    int read = networkStream.EndRead(asyncResult);
+                    var read = networkStream.EndRead(asyncResult);
                     if (read == 0)
                     {
                         lock (_clients)
@@ -191,21 +192,26 @@ namespace InfernoEmu
                             return;
                         }
                     }
+                    clientUsername = CleanUsername(Encoding.Default.GetString(client.Buffer).Substring(14, 14).Trim().TrimEnd('\0'));
                     switch (read)
                     {
                         case 12:
-                            PreparedPlayers.UnPrepare(Encoding.Default.GetString(client.Buffer).Substring(14, 14).Trim().TrimEnd('\0'));
+                            PreparedPlayers.UnPrepare(clientUsername);
                             break;
                         case 56:
-                            if (PreparedPlayers.IsPrepared(Encoding.Default.GetString(client.Buffer).Substring(14, 14).Trim().TrimEnd('\0')))
+                            if (PreparedPlayers.IsPrepared(clientUsername))
                             {
-                                client.Username = Encoding.Default.GetString(client.Buffer).Substring(14, 14).Trim().TrimEnd('\0');
+                                client.Username = clientUsername;
                                 string[] chars = new string[5], levels = new string[5], types = new string[5], wears = new string[5];
                                 _db.GetCharacters(client.Username, ref chars, ref levels, ref types, ref wears);
                                 Write(client.TcpClient, Packet.CreateCharacterPacket(chars, levels, types, wears));
                             }
                             else
+                            {
+                                MyLogger.WriteGameServerLog("Unprepared user entered. Username : " +
+                                                            clientUsername + ", IP : " + newClientEp.Address);
                                 Write(client.TcpClient, Packet.CreateMessage("User not prepared!"));
+                            }
                             break;
                         case 37:
                             var charname = Packet.GetCharName(client.Buffer);
@@ -240,10 +246,17 @@ namespace InfernoEmu
             catch (Exception e)
             {
                 MyLogger.WriteLog("OnDataRead error : " + e.Message);
-                lock (_clients)
+                if (client != null)
                 {
-                    _clients.Remove(client);
-                    return;
+                    if (client.Username != null)
+                        PreparedPlayers.UnPrepare(client.Username);
+                    if(clientUsername != "")
+                        PreparedPlayers.UnPrepare(clientUsername);
+                    lock (_clients)
+                    {
+                        _clients.Remove(client);
+                        return;
+                    }
                 }
             }
         }
@@ -273,6 +286,21 @@ namespace InfernoEmu
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// Returns string with only alphanumeric characters
+        /// </summary>
+        private static string CleanUsername(IEnumerable<char> str)
+        {
+            var toReturn = "";
+            foreach (var c in str)
+            {
+                if(!Char.IsLetter(c) && !Char.IsNumber(c))
+                    break;
+                toReturn += c;
+            }
+            return toReturn;
         }
     }
 }

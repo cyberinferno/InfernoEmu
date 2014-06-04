@@ -4,27 +4,34 @@ using System.Net;
 namespace InfernoEmu
 {
     /// <summary>
-    /// Holds players preapred by login server
+    /// Holds player usernames authenticated by login server
     /// </summary>
     public static class PreparedPlayers
     {
         private static readonly Dictionary<string, IPAddress> PlayerUserid = new Dictionary<string, IPAddress>();
 
-        public static bool PreparePlayer(string userid, IPAddress ip)
+        /// <summary>
+        /// Set an account as authenticated for Game Server's reference
+        /// </summary>
+        public static void PreparePlayer(string userid, IPAddress ip)
         {
             if (PlayerUserid.ContainsKey(userid))
-                return false;
+                return;
             PlayerUserid.Add(userid, ip);
-            return true;
+            return;
         }
 
+        /// <summary>
+        /// Returns authentication status of an account
+        /// </summary>
         public static bool IsPrepared(string userid)
         {
-            if (PlayerUserid.ContainsKey(userid))
-                return true;
-            return false;
+            return PlayerUserid.ContainsKey(userid);
         }
 
+        /// <summary>
+        /// De-authenticates an account
+        /// </summary>
         public static void UnPrepare(string userid)
         {
             if (PlayerUserid.ContainsKey(userid))

@@ -105,8 +105,8 @@ namespace InfernoEmu
             }
             else
             {
-                int i = 0;
-                for (int j = 0; j < 5; j++ )
+                var i = 0;
+                for (var j = 0; j < 5; j++ )
                 {
                     chars[j] = " ";
                     levels[j] = " ";
@@ -122,7 +122,7 @@ namespace InfernoEmu
                     if (temp.Length > 0)
                     {
                         wears[i] = " ";
-                        foreach (string t in temp)
+                        foreach (var t in temp)
                         {
                             var temp1 = t.Split(new[] {@"="}, StringSplitOptions.RemoveEmptyEntries);
                             if (temp1[0] != "WEAR")

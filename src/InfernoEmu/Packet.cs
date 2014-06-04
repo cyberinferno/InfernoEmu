@@ -67,7 +67,7 @@ namespace InfernoEmu
                     (asciiInt >= 97 && asciiInt <= 122) || asciiInt == 64)
                     username += c.ToString();
             }
-            foreach (char c in temp2)
+            foreach (var c in temp2)
             {
                 int asciiInt = c;
                 if (asciiInt == 0)
@@ -196,7 +196,9 @@ namespace InfernoEmu
             return newPacket;
         }
 
-
+        /// <summary>
+        /// Creates payment info packet
+        /// </summary>
         public static byte[] CreatePaymentPacket(int cindex, string charName)
         {
             var packet = new byte[] {0x00, 0x00};
@@ -205,54 +207,15 @@ namespace InfernoEmu
             packet = CombineByteArray(packet, temp);
             packet = CombineByteArray(packet, GetBytesFrom(charName));
             packet = CombineByteArray(packet, GetBytesFrom(GetNullString(21 - charName.Length)));
-            packet = CombineByteArray(packet, GetBytesFrom("Fuck off!"));
+            packet = CombineByteArray(packet, GetBytesFrom(Config.ServerName + " is a free server!"));
             packet = CombineByteArray(packet, GetBytesFrom(GetNullString(13)));
             packet = CombineByteArray(CreateReverseHexPacket(packet.Length + 2), packet);
-            //Crypt.encrypt_acl(Encoding.UTF8.GetString(packet), 952, 12);
-            return packet;
+            return Crypt.Encrypt(packet);
         }
 
-        public static byte[] AlterCharacterPacket(byte[] packet)
-        {
-            /*for (int i = 0; i < packet.Length; i++)
-            {
-                if((i + 2) < packet.Length)
-                {
-                    if (packet[i] == 0x9f && packet[i + 1] == 0x37 && packet[i + 2] == 0x1a)
-                    {
-                        packet[i] = 0x9c;
-                        packet[i + 1] = 0xe4;
-                        packet[i + 2] = 0x13;
-                    }
-                    else if (packet[i] == 0x9c && packet[i + 1] == 0xe6 && packet[i + 2] == 0x49)
-                    {
-                        packet[i] = 0x9c;
-                        packet[i + 1] = 0xe7;
-                        packet[i + 2] = 0x64;
-                    }
-                    else if (packet[i] == 0x9e && packet[i + 1] == 0x1c && packet[i + 2] == 0x88)
-                    {
-                        packet[i] = 0x9c;
-                        packet[i + 1] = 0xe5;
-                        packet[i + 2] = 0x2e;
-                    }
-                    else if (packet[i] == 0x9d && packet[i + 1] == 0x01 && packet[i + 2] == 0xf5)
-                    {
-                        packet[i] = 0x9c;
-                        packet[i + 1] = 0xe6;
-                        packet[i + 2] = 0x49;
-                    }
-                    else if (packet[i] == 0x01 && packet[i + 1] == 0x9e && packet[i + 2] == 0xa2)
-                    {
-                        packet[i] = 0x9c;
-                        packet[i + 1] = 0xe5;
-                        packet[i + 2] = 0x2e;
-                    }
-                }
-            }*/
-            return packet;
-        }
-
+        /// <summary>
+        /// Returns hex value of a byte data
+        /// </summary>
         public static int GetIntFromHex(byte[] data)
         {
             /*if (BitConverter.IsLittleEndian)
@@ -261,23 +224,9 @@ namespace InfernoEmu
             return (data[1] << 8) | data[0];
         }
 
-        public static int GetClientId(byte[] data)
-        {
-            if(BitConverter.IsLittleEndian)
-                Array.Reverse(data);
-            return data.Aggregate(0, (current, t) => (current << 8) | t);
-        }
-
-        public static byte[] CreateClientStatusPacket(int clientId, string accountId)
-        {
-            var packet = new byte[] { 0x00, 0x00 };
-            packet = CombineByteArray(packet, CreateReverseHexPacket(clientId));
-            var temp = new byte[] { 0x02, 0xe3 };
-            packet = CombineByteArray(packet, CombineByteArray(temp, GetBytesFrom(accountId)));
-            packet = CombineByteArray(packet, GetBytesFrom(GetNullString(21 - accountId.Length)));
-            return CombineByteArray(CreateReverseHexPacket(packet.Length + 2), packet);
-        }
-
+        /// <summary>
+        /// Returns character name from an encrypted packet
+        /// </summary>
         public static string GetCharName(byte[] packet)
         {
             try
@@ -296,6 +245,9 @@ namespace InfernoEmu
             }
         }
 
+        /// <summary>
+        /// Creates character details packet
+        /// </summary>
         public static byte[] CreateCharDetailPacket(string charName, int level, int type, string wear)
         {
             // name + (20 - name)*0 + 0 + type + town + 0 + level + 0 + 0 + 0 + 0 + 0 + 0 + 0 + wear + (188 - wear)*0 
@@ -336,6 +288,9 @@ namespace InfernoEmu
             return CombineByteArray(returnByte, GetBytesFrom(GetNullString(188 - returnByte.Length)));
         }
 
+        /// <summary>
+        /// Decides where the item has to go while displaying in client side
+        /// </summary>
         private static long DecideWear(int itemPosition, int type)
         {
             if (itemPosition == 0)
@@ -343,53 +298,65 @@ namespace InfernoEmu
                 switch (type)
                 {
                     case 1:
-                        return 0;
                     case 3:
-                        return 1;
+                        return 0;
                     default:
                         return 2;
                 }
             }
-            else if(itemPosition == 1)
+            if(itemPosition == 1)
             {
                 switch (type)
                 {
                     case 1:
-                        return 2;
+                    case 3:
+                        return 1;
                     default:
                         return 3;
                 }
             }
+            if (type == 0 || type == 2)
+                return itemPosition + 2;
             return itemPosition + 1;
         }
 
+        /// <summary>
+        /// Creates all character display packet
+        /// </summary>
         public static byte[] CreateCharacterPacket(string[] chars, string[] levels, string[] types, string[] wears)
         {
             if (chars[0] == " ")
                 return CreateNewAccountPacket();
             var toReturn = new byte[] { 0x00 };
-            for (int i = 0; i < chars.Length; i++)
+            for (var i = 0; i < chars.Length; i++)
                 toReturn = i == 0 ? CreateCharDetailPacket(chars[i], Convert.ToInt32(levels[i]), Convert.ToInt32(types[i]), wears[i]) : CombineByteArray(toReturn, chars[i] != " " ? CreateCharDetailPacket(chars[i], Convert.ToInt32(levels[i]), Convert.ToInt32(types[i]), wears[i]) : CreateEmptyCharSlot());
-            toReturn = AlterCharacterPacket(Crypt.Encrypt(toReturn));
-            
-            return CombineByteArray(new byte[] {0xb8, 0x03, 0x00, 0x00, 0x00, 0x00, 0x0b, 0x00, 0x03, 0xff, 0x05, 0x11}, toReturn);
+            return CombineByteArray(new byte[] {0xb8, 0x03, 0x00, 0x00, 0x00, 0x00, 0x0b, 0x00, 0x03, 0xff, 0x05, 0x11}, Crypt.Encrypt(toReturn));
         }
 
+        /// <summary>
+        /// Creates packet for account without characters
+        /// </summary>
         private static byte[] CreateNewAccountPacket()
         {
             var header = new byte[] { 0xb8, 0x03, 0x00, 0x00, 0x00, 0x00, 0x0b, 0x00, 0x03, 0xff, 0x05, 0x11 };
             var toReturn = new byte[] {0x00};
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < 5; i++)
                 toReturn = i == 0 ? CreateEmptyCharSlot() : CombineByteArray(toReturn, CreateEmptyCharSlot());
             return CombineByteArray(header, Crypt.Encrypt(toReturn));
         }
 
+        /// <summary>
+        /// Creates empty slot of each character packet
+        /// </summary>
         private static byte[] CreateEmptyCharSlot()
         {
-            var toReturn = CombineByteArray(GetBytesFrom(GetNullString(21)), new byte[] { 0xff });
-            return CombineByteArray(toReturn, GetBytesFrom(GetNullString(188 - 22)));
+            var toReturn = CombineByteArray(GetBytesFrom(GetNullString(22)), new byte[] { 0xff });
+            return CombineByteArray(toReturn, GetBytesFrom(GetNullString(188 - 23)));
         }
 
+        /// <summary>
+        /// Creates a client side dialog box with a 'OK' button and custom message which exits the game on response from player
+        /// </summary>
         public static byte[] CreatePopup(string msg)
         {
             var header = new byte[] { 0x4e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0b, 0x00, 0x03, 0xff, 0xff, 0x0f, 0x7e, 0x2f, 0x6e, 0x33};
