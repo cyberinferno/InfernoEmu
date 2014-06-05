@@ -33,8 +33,7 @@ Things that are working
 
 Known bugs
 ----------
-1. Character display order might get changed while displaying in the client side
-2. Character wearing might get distorted in some rare cases as the character display packet is not 100% perfect
+Refer https://github.com/cyberinferno/InfernoEmu/issues
 
 Things to be implemented in the near future
 --------------------------------------------
