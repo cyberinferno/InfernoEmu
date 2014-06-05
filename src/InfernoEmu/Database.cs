@@ -52,7 +52,7 @@ namespace InfernoEmu
         {
             if(!_isConnected)
                 return false;
-            var cmd = new SqlCommand("select c_id from account where c_id = '" + username + "' and c_headera = '" + passwd + "'", _myConnection);
+            var cmd = new SqlCommand("SELECT c_id FROM account WHERE c_id = '" + username + "' AND c_headera = '" + passwd + "'", _myConnection);
             var dataReader = cmd.ExecuteReader();
             var toReturn = dataReader.HasRows;
             dataReader.Close();
@@ -66,7 +66,7 @@ namespace InfernoEmu
         {
             if (!_isConnected)
                 return false;
-            var cmd = new SqlCommand("select c_id from account where c_id = '" + username + "' and c_status != 'A'", _myConnection);
+            var cmd = new SqlCommand("SELECT c_id FROM account WHERE c_id = '" + username + "' AND c_status != 'A'", _myConnection);
             var dataReader = cmd.ExecuteReader();
             var toReturn = dataReader.HasRows;
             dataReader.Close();
@@ -80,13 +80,16 @@ namespace InfernoEmu
         {
             if (!_isConnected)
                 return false;
-            var cmd = new SqlCommand("select c_id from charac0 where c_sheadera = '" + username + "' and c_id = '" + character + "'", _myConnection);
+            var cmd = new SqlCommand("SELECT c_id FROM charac0 WHERE c_sheadera = '" + username + "' and c_id = '" + character + "'", _myConnection);
             var dataReader = cmd.ExecuteReader();
             var toReturn = dataReader.HasRows;
             dataReader.Close();
             return toReturn;
         }
 
+        /// <summary>
+        /// Sets character details of the account
+        /// </summary>
         public void GetCharacters(string username, ref string[] chars, ref string[] levels, ref string[] types, ref string[] wears)
         {
             if (!_isConnected)
@@ -95,7 +98,7 @@ namespace InfernoEmu
                 levels = new[] { " " };
                 types = new[] { " " };
             }
-            var cmd = new SqlCommand("select c_id, c_sheaderc, c_sheaderb, m_body from charac0 where c_sheadera = '" + username + "' and c_status = 'A' order by d_udate desc", _myConnection);
+            var cmd = new SqlCommand("SELECT c_id, c_sheaderc, c_sheaderb, m_body FROM charac0 WHERE c_sheadera = '" + username + "' AND c_status = 'A' ORDER BY d_udate DESC", _myConnection);
             var dataReader = cmd.ExecuteReader();
             if (!dataReader.HasRows)
             {
@@ -140,6 +143,16 @@ namespace InfernoEmu
                 }
                 dataReader.Close();
             }
+        }
+
+        /// <summary>
+        /// Deletes a character
+        /// </summary>
+        public bool DeleteCharacter(string characterName)
+        {
+            var cmd = new SqlCommand("UPDATE charac0 SET c_status='X' WHERE c_id='" + characterName + "'", _myConnection);
+            var rows = cmd.ExecuteNonQuery();
+            return rows != 0;
         }
     }
 }

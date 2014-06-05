@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -127,25 +124,6 @@ namespace InfernoEmu
         }
 
         /// <summary>
-        /// Returns packet with server IP and num
-        /// </summary>
-        public static byte[] CreateZoneAgentIdPacket()
-        {
-            var packet = CombineByteArray(new byte[]{0x20}, GetBytesFrom(GetNullString(7)));
-            packet = CombineByteArray(packet, new byte[] {0x02, 0xe0});
-            string aid = string.Format("{0:x}", 0);
-            string sid = string.Format("{0:x}", 0);
-            var tempByte = new[] { Convert.ToByte(sid, 16) };
-            packet = CombineByteArray(packet, new[] { tempByte[0] });
-            tempByte = new[] { Convert.ToByte(aid, 16) };
-            packet = CombineByteArray(packet, new[] { tempByte[0] });
-            packet = CombineByteArray(packet, GetBytesFrom(Config.ServerIp.ToString()));
-            packet = CombineByteArray(packet, GetBytesFrom(GetNullString(16 - Config.GameServerPort.ToString().Length)));
-            packet = CombineByteArray(packet, CreateReverseHexPacket(Config.GameServerPort));
-            return CombineByteArray(packet, GetBytesFrom(GetNullString(2)));
-        }
-
-        /// <summary>
         /// Returns packet with byte equivalent of int
         /// </summary>
         private static byte[] CreateReverseHexPacket(int num)
@@ -229,20 +207,7 @@ namespace InfernoEmu
         /// </summary>
         public static string GetCharName(byte[] packet)
         {
-            try
-            {
-                IntPtr unmanagedPointer = Marshal.AllocHGlobal(packet.Length);
-                Marshal.Copy(packet, 0, unmanagedPointer, packet.Length);
-                Crypt.decrypt_acl(unmanagedPointer, 37, 0);
-                Marshal.Copy(unmanagedPointer, packet, 0, 37);
-                Marshal.FreeHGlobal(unmanagedPointer);
-                return Encoding.Default.GetString(packet).Substring(12, 12).Trim().TrimEnd('\0');
-            }
-            catch(Exception e)
-            {
-                MyLogger.WriteLog("Exception in GetCharName : " + e.Message);
-                return " ";
-            }
+            return Encoding.Default.GetString(Crypt.Decrypt(packet)).Substring(12, 12).Trim().TrimEnd('\0');
         }
 
         /// <summary>
@@ -364,6 +329,14 @@ namespace InfernoEmu
                 msg = msg.Substring(0, 56);
             var toReturn = CombineByteArray(GetBytesFrom(msg), GetBytesFrom(GetNullString(60 - msg.Length)));
             return CombineByteArray(header, CombineByteArray(Crypt.Encrypt(toReturn), new byte[] { 0x00, 0x00 }));
+        }
+
+        /// <summary>
+        /// Checks whether the packet is character deletion request packet
+        /// </summary>
+        public static bool CheckCharDeletePacket(byte[] packet)
+        {
+            return packet[8] == 0x03 && packet[9] == 0xff && packet[10] == 0x02 && packet[11] == 0xa0;
         }
     }
 }

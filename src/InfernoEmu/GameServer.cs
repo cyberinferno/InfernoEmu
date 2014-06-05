@@ -210,15 +210,15 @@ namespace InfernoEmu
                             {
                                 MyLogger.WriteGameServerLog("Unprepared user entered. Username : " +
                                                             clientUsername + ", IP : " + newClientEp.Address);
-                                Write(client.TcpClient, Packet.CreateMessage("User not prepared!"));
+                                Write(client.TcpClient, Packet.CreatePopup("User not prepared!"));
                             }
                             break;
                         case 37:
-                            var charname = Packet.GetCharName(client.Buffer);
-                            if (_db.CharacterExists(client.Username, charname))
+                            var charName = Packet.GetCharName(client.Buffer);
+                            if (_db.CharacterExists(client.Username, charName))
                             {
                                 PreparedPlayers.UnPrepare(client.Username);
-                                Write(client.TcpClient, Packet.CreatePopup("Selected " + charname));
+                                Write(client.TcpClient, Packet.CreatePopup("Selected " + charName));
                             }
                             else
                             {
@@ -227,8 +227,36 @@ namespace InfernoEmu
                             }
                             break;
                         case 33:
-                            var trimPackettp = client.Buffer;
-                            Array.Resize(ref trimPackettp, read);
+                            var trimPacket33 = client.Buffer;
+                            Array.Resize(ref trimPacket33, read);
+                            if(Packet.CheckCharDeletePacket(trimPacket33))
+                            {
+                                var characterName = Packet.GetCharName(client.Buffer);
+                                if (_db.CharacterExists(client.Username, characterName))
+                                {
+                                    if (_db.DeleteCharacter(characterName))
+                                    {
+                                        Write(client.TcpClient, trimPacket33);
+                                    }
+                                    else
+                                    {
+                                        MyLogger.WriteGameServerLog("Error while deleting character : " +
+                                                                    characterName);
+                                        Write(client.TcpClient, Packet.CreatePopup("Internal server error!"));
+                                    }
+                                }
+                                else
+                                {
+                                    MyLogger.WriteGameServerLog("Hacker trying to delete " + Packet.GetCharName(trimPacket33) + ". Username : " +
+                                                            client.Username + ", IP : " + newClientEp.Address);
+                                    Write(client.TcpClient, Packet.CreatePopup("Invalid character name!"));
+                                }
+                            }
+                            else
+                            {
+                                MyLogger.WriteGameServerLog("World enter packet got!");
+                                File.WriteAllBytes("p", client.Buffer);
+                            }
                             break;
                         default:
                             MyLogger.WriteGameServerLog("Got packet of length of " + read);
