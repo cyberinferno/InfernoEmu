@@ -30,6 +30,7 @@ Things that are working
 4. Server maintenance message for players
 5. Character display
 6. Character diconnection from server
+7. Character deletion
 
 Known bugs
 ----------
@@ -38,8 +39,10 @@ Refer https://github.com/cyberinferno/InfernoEmu/issues
 Things to be implemented in the near future
 --------------------------------------------
 1. Create a new character
-2. Delete a character
-3. Actually making character enter into the map its currently in
+2. Actually making character enter into the map its currently in
 
 
-Thanks getdeepz (https://www.facebook.com/DipakRNayak) for his invaluable help in packet structures and example codes!
+Thanks To
+----------
+1. getdeepz (https://www.facebook.com/DipakRNayak) for his invaluable help in packet structures and example codes!
+2. Mihir (https://github.com/mihir7293) for contributing to the code base
