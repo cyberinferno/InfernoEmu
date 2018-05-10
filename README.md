@@ -10,7 +10,7 @@ This is an effort to create an open source emulator for A3. If you are developer
 Requirements
 ------------
 1. Windows Operating System
-2. Dot net framework 4.0
+2. .NET Framework 4.0
 3. MSSQL server
 4. Existing A3 MMORPG server with characters created. For guides creating a server visit http://forum.ragezone.com/f98/
 5. Visual Studio 2010 (For making changes in the code and building it)
