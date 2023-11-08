@@ -1,3 +1,7 @@
+# Project is in Archive Mode
+
+Please checkout https://github.com/project-agonyl/project-agonyl-emulator for the latest development in A3 Online emulator.
+
 Inferno Emu A3 emulator for A3 Client version 562
 ==================================================
 
